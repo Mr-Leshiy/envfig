@@ -6,9 +6,10 @@ use std::{env, fmt::Debug, str::FromStr};
 pub struct EnvVarDef<T> {
     name: String,
 
+    default: Option<T>,
+
     title: Option<String>,
     description: Option<String>,
-    default: Option<T>,
     example: Option<T>,
 }
 
@@ -21,6 +22,38 @@ impl<T> EnvVarDef<T> {
             default: None,
             example: None,
         }
+    }
+
+    pub fn with_default(
+        mut self,
+        default: T,
+    ) -> Self {
+        self.default = Some(default);
+        self
+    }
+
+    pub fn with_title(
+        mut self,
+        title: String,
+    ) -> Self {
+        self.title = Some(title);
+        self
+    }
+
+    pub fn with_description(
+        mut self,
+        description: String,
+    ) -> Self {
+        self.description = Some(description);
+        self
+    }
+
+    pub fn with_example(
+        mut self,
+        example: T,
+    ) -> Self {
+        self.example = Some(example);
+        self
     }
 }
 
