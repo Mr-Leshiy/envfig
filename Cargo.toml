@@ -45,3 +45,4 @@ arithmetic_side_effects = "deny"
 
 [dependencies]
 anyhow = "1.0.98"
+console = "0.15.11"

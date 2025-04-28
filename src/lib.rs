@@ -1,5 +1,7 @@
 #![allow(missing_docs, clippy::missing_docs_in_private_items, dead_code)]
 
+mod doc;
+
 use std::{env, fmt::Debug, str::FromStr};
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -14,9 +16,9 @@ pub struct EnvVarDef<T> {
 }
 
 impl<T> EnvVarDef<T> {
-    pub fn new(name: String) -> Self {
+    pub fn new(name: impl ToString) -> Self {
         Self {
-            name,
+            name: name.to_string(),
             title: None,
             description: None,
             default: None,
@@ -34,17 +36,17 @@ impl<T> EnvVarDef<T> {
 
     pub fn with_title(
         mut self,
-        title: String,
+        title: impl ToString,
     ) -> Self {
-        self.title = Some(title);
+        self.title = Some(title.to_string());
         self
     }
 
     pub fn with_description(
         mut self,
-        description: String,
+        description: impl ToString,
     ) -> Self {
-        self.description = Some(description);
+        self.description = Some(description.to_string());
         self
     }
 
