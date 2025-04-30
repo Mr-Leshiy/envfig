@@ -46,3 +46,6 @@ arithmetic_side_effects = "deny"
 [dependencies]
 console = "0.15.11"
 thiserror = "2.0.12"
+
+[dev-dependencies]
+proptest = { version = "1.6.0", features = ["attr-macro"] }

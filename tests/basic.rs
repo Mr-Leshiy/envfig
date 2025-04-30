@@ -2,11 +2,9 @@
 
 use envfig::{EnvVarDef, LoadError};
 
-#[test]
-fn load_test() {
+#[proptest::property_test]
+fn load_test(env_var_value: u8) {
     let env_var_name = "ENV_VAR";
-    let env_var_value = 123;
-
     unsafe {
         std::env::set_var(env_var_name, env_var_value.to_string());
     }
@@ -30,11 +28,9 @@ fn load_test() {
     ));
 }
 
-#[test]
-fn load_with_default_test() {
+#[proptest::property_test]
+fn load_with_default_test(env_var_value: u8, default: u8) {
     let env_var_name = "ENV_VAR";
-    let env_var_value = 123;
-    let default = 124;
 
     unsafe {
         std::env::set_var(env_var_name, env_var_value.to_string());
