@@ -39,7 +39,7 @@ impl<T: Display> Display for EnvVarDef<T> {
 
 #[test]
 fn doc_test() {
-    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR".to_string())
+    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR")
         .with_title("Some title")
         .with_description("Some huge description with \n making a new line")
         .with_default(10)
@@ -48,7 +48,7 @@ fn doc_test() {
     println!("{env_var}");
 
     println!("------");
-    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR".to_string())
+    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR")
         .with_description("Some huge description with \n making a new line")
         .with_default(10)
         .with_example(15);
@@ -56,7 +56,7 @@ fn doc_test() {
     println!("{env_var}");
 
     println!("------");
-    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR".to_string())
+    let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR")
         .with_default(10)
         .with_example(15);
 

@@ -1,6 +1,6 @@
 //! Basic integration tests of the public API of the crate
 
-use envfig::EnvVarDef;
+use envfig::{EnvVarDef, LoadError};
 
 #[test]
 fn load_test() {
@@ -16,12 +16,18 @@ fn load_test() {
     unsafe {
         std::env::remove_var(env_var_name);
     }
-    assert!(env_var.clone().load().is_err());
+    assert!(matches!(
+        env_var.clone().load(),
+        Err(LoadError::CannotLoad(_, _))
+    ));
 
     unsafe {
         std::env::set_var(env_var_name, "not a u8 type");
     }
-    assert!(env_var.clone().load().is_err());
+    assert!(matches!(
+        env_var.clone().load(),
+        Err(LoadError::CannotParse(_, _, _))
+    ));
 }
 
 #[test]

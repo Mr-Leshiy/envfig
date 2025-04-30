@@ -16,7 +16,8 @@ pub struct EnvVarDef<T> {
 }
 
 impl<T> EnvVarDef<T> {
-    pub fn new(name: impl ToString) -> Self {
+    pub fn new<S>(name: &S) -> Self
+    where S: ToString + ?Sized {
         Self {
             name: name.to_string(),
             title: None,
@@ -26,6 +27,7 @@ impl<T> EnvVarDef<T> {
         }
     }
 
+    #[must_use]
     pub fn with_default(
         mut self,
         default: T,
@@ -34,22 +36,31 @@ impl<T> EnvVarDef<T> {
         self
     }
 
-    pub fn with_title(
+    #[must_use]
+    pub fn with_title<S>(
         mut self,
-        title: impl ToString,
-    ) -> Self {
+        title: &S,
+    ) -> Self
+    where
+        S: ToString + ?Sized,
+    {
         self.title = Some(title.to_string());
         self
     }
 
-    pub fn with_description(
+    #[must_use]
+    pub fn with_description<S>(
         mut self,
-        description: impl ToString,
-    ) -> Self {
+        description: &S,
+    ) -> Self
+    where
+        S: ToString + ?Sized,
+    {
         self.description = Some(description.to_string());
         self
     }
 
+    #[must_use]
     pub fn with_example(
         mut self,
         example: T,
@@ -59,31 +70,34 @@ impl<T> EnvVarDef<T> {
     }
 }
 
-impl<T: FromStr> EnvVarDef<T>
-where T: FromStr<Err: Debug>
+/// Errors which could occure during the `EnvVarDef::load` method
+#[derive(thiserror::Error, Clone, Debug, PartialEq, Eq)]
+pub enum LoadError<ParseErrorT: Debug> {
+    #[error("Cannot load Env Var {0}, either not set or not valid unicode encoded. error: {1:?}")]
+    CannotLoad(String, env::VarError),
+    #[error("Cannot parse Env Var {0} value {1}, err: {2:?}")]
+    CannotParse(String, String, ParseErrorT),
+}
+
+impl<T: FromStr, ParseErrorT> EnvVarDef<T>
+where
+    T: FromStr<Err = ParseErrorT>,
+    ParseErrorT: Debug,
 {
-    pub fn load(self) -> anyhow::Result<T> {
-        let Ok(val) = env::var(&self.name) else {
-            if let Some(default) = self.default {
-                return Ok(default);
-            }
-            anyhow::bail!(
-                "Cannot load Env Var {}, either not set or not valid unicode encoded.",
-                self.name
-            );
-        };
-        match val.parse() {
-            Ok(res) => Ok(res),
-            Err(err) => {
-                if let Some(default) = self.default {
-                    Ok(default)
-                } else {
-                    anyhow::bail!(
-                        "Cannot parse Env Var {} value {val}, err: {err:?}",
-                        self.name
-                    );
-                }
-            },
-        }
+    /// Tries to loads environment variable.
+    ///
+    /// # Errors
+    /// - `LoadError::CannotLoad` (if `default` is set, returns `default` value instead of
+    ///   this error).
+    /// - `LoadError::CannotParse` (if `default` is set, returns `default` value instead
+    ///   of this error).
+    pub fn load(self) -> Result<T, LoadError<ParseErrorT>> {
+        env::var(&self.name)
+            .map_err(|e| LoadError::CannotLoad(self.name.clone(), e))
+            .and_then(|v| {
+                v.parse()
+                    .map_err(|e| LoadError::CannotParse(self.name, v, e))
+            })
+            .map_or_else(|e| self.default.ok_or(e), Ok)
     }
 }
