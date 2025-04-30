@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::EnvVarDef;
 
-impl<T: Display> Display for EnvVarDef<T> {
+impl<T: Display, V> Display for EnvVarDef<T, V> {
     fn fmt(
         &self,
         f: &mut std::fmt::Formatter<'_>,
