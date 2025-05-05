@@ -29,7 +29,10 @@ fn load_test(env_var_value: u8) {
 }
 
 #[proptest::property_test]
-fn load_with_default_test(env_var_value: u8, default: u8) {
+fn load_with_default_test(
+    env_var_value: u8,
+    default: u8,
+) {
     let env_var_name = "ENV_VAR";
 
     unsafe {
@@ -47,4 +50,29 @@ fn load_with_default_test(env_var_value: u8, default: u8) {
         std::env::set_var(env_var_name, "not a u8 type");
     }
     assert_eq!(env_var.clone().load().unwrap(), default);
+}
+
+
+
+#[proptest::property_test]
+fn load_option_test(
+    env_var_value: u8,
+) {
+    let env_var_name = "ENV_VAR";
+
+    unsafe {
+        std::env::set_var(env_var_name, env_var_value.to_string());
+    }
+    let env_var: EnvVarDef<u8> = EnvVarDef::new(env_var_name);
+    assert_eq!(env_var.clone().load_option().unwrap(), Some(env_var_value));
+
+    unsafe {
+        std::env::remove_var(env_var_name);
+    }
+    assert_eq!(env_var.clone().load_option().unwrap(), None);
+
+    unsafe {
+        std::env::set_var(env_var_name, "not a u8 type");
+    }
+    assert_eq!(env_var.clone().load_option().unwrap(), None);
 }

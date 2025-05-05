@@ -1,7 +1,11 @@
 //! Module contains a `Validator` trait definition along with the some implementation's of
 //! this trait.
 
+mod min_max;
+
 use std::fmt::Debug;
+
+pub use min_max::SatMinMaxValidator;
 
 /// An environment variable validator, after the variable has been loaded and parsed.
 /// Also important to note that it also validates the default value.
@@ -15,7 +19,7 @@ pub trait Validator<T> {
     /// # Errors
     /// - `Self::Err`
     fn validate(
-        &self,
+        self,
         val: T,
     ) -> Result<T, Self::Err>;
 }
@@ -24,7 +28,7 @@ impl<T> Validator<T> for () {
     type Err = ();
 
     fn validate(
-        &self,
+        self,
         val: T,
     ) -> Result<T, Self::Err> {
         Ok(val)

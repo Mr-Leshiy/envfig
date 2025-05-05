@@ -74,15 +74,6 @@ impl<T, V> EnvVarDef<T, V> {
         self.example = Some(example);
         self
     }
-
-    #[must_use]
-    pub fn with_validator(
-        mut self,
-        validator: V,
-    ) -> Self {
-        self.validator = Some(validator);
-        self
-    }
 }
 
 /// Errors which could occure during the `EnvVarDef::load` method
@@ -135,8 +126,8 @@ where
     ParseErrorT: Debug,
 {
     /// Tries to loads environment variable that is optional.
-    /// Does not fails on `LoadError::CannotLoad` and `LoadError::CannotParse`, instead
-    /// returns `None`.
+    /// Does not fails on `LoadError::CannotLoad` and `LoadError::CannotParse`,
+    /// instead ignores `default` value and returns `None`.
     ///
     /// # Errors
     /// - `LoadError::ValidationError`.
