@@ -74,6 +74,15 @@ impl<T, V> EnvVarDef<T, V> {
         self.example = Some(example);
         self
     }
+
+    #[must_use]
+    pub fn with_validator(
+        mut self,
+        validator: V,
+    ) -> Self {
+        self.validator = Some(validator);
+        self
+    }
 }
 
 /// Errors which could occure during the `EnvVarDef::load` method
