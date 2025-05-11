@@ -1,4 +1,67 @@
-#![allow(missing_docs, clippy::missing_docs_in_private_items)]
+//! A flexible and type-safe system for defining, documenting, and validating environment
+//! variables.
+//!
+//! The [`EnvVarDef`] type provides a builder-style interface to define environment
+//! variables with optional default values, human-friendly metadata (title, description,
+//! example), and custom validation logic.
+//!
+//! It supports loading required or optional variables using [`EnvVarDef::load`] and
+//! [`EnvVarDef::load_option`], and will return rich error types when parsing or
+//! validation fails.
+//!
+//! # Example
+//! ```rust
+//! use std::{env, str::FromStr};
+//!
+//! use envfig::{EnvVarDef, LoadError, validator::Validator};
+//!
+//! // A simple validator that ensures the value is greater than zero
+//! struct Positive;
+//!
+//! impl Validator<i32> for Positive {
+//!     type Err = String;
+//!
+//!     fn validate(
+//!         self,
+//!         val: i32,
+//!     ) -> Result<i32, Self::Err> {
+//!         if val > 0 {
+//!             Ok(val)
+//!         } else {
+//!             Err("Value must be positive".into())
+//!         }
+//!     }
+//! }
+//!
+//! // Set an environment variable
+//! unsafe {
+//!     env::set_var("APP_PORT", "8080");
+//! }
+//!
+//! let port = EnvVarDef::new(&"APP_PORT")
+//!     .with_title(&"Application Port")
+//!     .with_description(&"The port the application listens on")
+//!     .with_example(8080)
+//!     .with_validator(Positive)
+//!     .load()
+//!     .unwrap();
+//! ```
+//!
+//! # Features
+//! - Type-safe parsing from environment variables.
+//! - Optional default value fallback.
+//! - Full metadata support (title, description, example).
+//! - Custom validation support via the [`Validator`] trait.
+//! - Granular error types via [`LoadError`].
+//!
+//! # Traits
+//! - [`Validator<T>`] is required to perform validation of environment variable values.
+//!
+//! # Errors
+//! Errors are represented via the [`LoadError`] enum which distinguishes between:
+//! - `CannotLoad`: variable not found or not valid Unicode.
+//! - `CannotParse`: value couldn't be parsed into the target type.
+//! - `ValidationError`: validation logic failed.
 
 mod doc;
 pub mod validator;
@@ -7,6 +70,48 @@ use std::{env, fmt::Debug, str::FromStr};
 
 use validator::Validator;
 
+/// Represents the definition of an environment variable, including its name,
+/// optional default value, metadata (title, description, example), and optional
+/// validation logic.
+///
+/// `T` is the type of the environment variable's value.
+/// `V` is the type of the validator used to check the value's validity.
+///
+/// # Example
+/// ```rust
+/// use std::{env, str::FromStr};
+///
+/// use envfig::{EnvVarDef, LoadError, validator::Validator};
+///
+/// struct Positive;
+///
+/// impl Validator<i32> for Positive {
+///     type Err = String;
+///
+///     fn validate(
+///         self,
+///         val: i32,
+///     ) -> Result<i32, Self::Err> {
+///         if val > 0 {
+///             Ok(val)
+///         } else {
+///             Err("Value must be positive".into())
+///         }
+///     }
+/// }
+///
+/// unsafe {
+///     env::set_var("APP_PORT", "8080");
+/// }
+///
+/// let port = EnvVarDef::new(&"APP_PORT")
+///     .with_title(&"Application Port")
+///     .with_description(&"The port the application listens on")
+///     .with_example(8080)
+///     .with_validator(Positive)
+///     .load()
+///     .unwrap();
+/// ```
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct EnvVarDef<T, V = ()> {
     name: String,
@@ -21,6 +126,7 @@ pub struct EnvVarDef<T, V = ()> {
 }
 
 impl<T, V> EnvVarDef<T, V> {
+    /// Creates a new `EnvVarDef` with the specified environment variable `name`.
     pub fn new<S>(name: &S) -> Self
     where S: ToString + ?Sized {
         Self {
@@ -33,6 +139,7 @@ impl<T, V> EnvVarDef<T, V> {
         }
     }
 
+    /// Sets a default value for the environment variable.
     #[must_use]
     pub fn with_default(
         mut self,
@@ -42,6 +149,7 @@ impl<T, V> EnvVarDef<T, V> {
         self
     }
 
+    /// Sets a `title` for the environment variable.
     #[must_use]
     pub fn with_title<S>(
         mut self,
@@ -54,6 +162,7 @@ impl<T, V> EnvVarDef<T, V> {
         self
     }
 
+    /// Sets a `description` for the environment variable.
     #[must_use]
     pub fn with_description<S>(
         mut self,
@@ -66,6 +175,7 @@ impl<T, V> EnvVarDef<T, V> {
         self
     }
 
+    /// Sets an `example` value for the environment variable.
     #[must_use]
     pub fn with_example(
         mut self,
@@ -75,6 +185,7 @@ impl<T, V> EnvVarDef<T, V> {
         self
     }
 
+    /// Sets a `validator` for the environment variable value.
     #[must_use]
     pub fn with_validator(
         mut self,
@@ -88,10 +199,16 @@ impl<T, V> EnvVarDef<T, V> {
 /// Errors which could occure during the `EnvVarDef::load` method
 #[derive(thiserror::Error, Clone, Debug, PartialEq, Eq)]
 pub enum LoadError<ParseErrorT: Debug, ValidationErrorT> {
+    /// The environment variable could not be loaded due to it not being set
+    /// or not being valid Unicode.
     #[error("Cannot load Env Var {0}, either not set or not valid unicode encoded. error: {1:?}")]
     CannotLoad(String, env::VarError),
+
+    /// The environment variable was set but could not be parsed into the expected type.
     #[error("Cannot parse Env Var {0} value {1}, err: {2:?}")]
     CannotParse(String, String, ParseErrorT),
+
+    /// The environment variable value did not pass validation.
     #[error(transparent)]
     ValidationError(#[from] ValidationErrorT),
 }
