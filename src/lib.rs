@@ -41,9 +41,9 @@ use validator::Validator;
 ///     env::set_var("APP_PORT", "8080");
 /// }
 ///
-/// let port = EnvVarDef::new(&"APP_PORT")
-///     .with_title(&"Application Port")
-///     .with_description(&"The port the application listens on")
+/// let port = EnvVarDef::new("APP_PORT")
+///     .with_title("Application Port")
+///     .with_description("The port the application listens on")
 ///     .with_example(8080)
 ///     .with_validator(Positive)
 ///     .load()
