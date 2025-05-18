@@ -3,12 +3,12 @@
 A flexible and type-safe system for defining, documenting, and validating environment
 variables.
 
-The [`EnvVarDef`] type provides a builder-style interface to define environment
+The `EnvVarDef` type provides a builder-style interface to define environment
 variables with optional default values, human-friendly metadata (title, description,
 example), and custom validation logic.
 
-It supports loading required or optional variables using [`EnvVarDef::load`] and
-[`EnvVarDef::load_option`], and will return rich error types when parsing or
+It supports loading required or optional variables using `EnvVarDef::load` and
+`EnvVarDef::load_option`, and will return rich error types when parsing or
 validation fails.
 
 # Example
@@ -53,14 +53,8 @@ let port = EnvVarDef::new(&"APP_PORT")
 - Type-safe parsing from environment variables.
 - Optional default value fallback.
 - Full metadata support (title, description, example).
-- Custom validation support via the [`Validator`] trait.
-- Granular error types via [`LoadError`].
+- Custom validation support via the `Validator` trait.
+- Granular error types via `LoadError`.
 
 # Traits
-- [`Validator<T>`] is required to perform validation of environment variable values.
-
-# Errors
-Errors are represented via the [`LoadError`] enum which distinguishes between:
-- `CannotLoad`: variable not found or not valid Unicode.
-- `CannotParse`: value couldn't be parsed into the target type.
-- `ValidationError`: validation logic failed.
+- `Validator<T>` is required to perform validation of environment variable values.
