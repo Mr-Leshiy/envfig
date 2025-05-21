@@ -1,6 +1,6 @@
 [package]
 name = "envfig"
-version = "0.1.0"
+version = "0.1.1"
 description = "A flexible and type-safe system for defining, documenting, and validating environment variables."
 repository = "https://github.com/Mr-Leshiy/envfig"
 readme = "README.md"
