@@ -1,39 +1,61 @@
-use std::fmt::Display;
+use std::fmt::{Display, Write};
 
-use crate::EnvVarDef;
+use crate::{EnvVarDef, validator::Validator};
 
-impl<T: Display, V> Display for EnvVarDef<T, V> {
-    fn fmt(
-        &self,
-        f: &mut std::fmt::Formatter<'_>,
-    ) -> std::fmt::Result {
-        writeln!(f, "{} {}\n", console::Emoji::new("🔹", ""), self.name,)?;
+impl<T: Display, V: Validator<T>> EnvVarDef<T, V> {
+    /// A human readable documentation `EnvVarDef` based on the  `description`, `title` on
+    /// other fields. Which provides a comprehensive description of the `EnvVarDef`
+    /// intance.
+    pub fn doc(&self) -> String {
+        let mut res = String::new();
+        let _ = writeln!(
+            &mut res,
+            "{} {}\n",
+            console::Emoji::new("🔹", ""),
+            self.name,
+        );
 
         if self.title.is_some() || self.description.is_some() {
-            write!(f, "{}", console::Emoji::new("📖", ""))?;
+            let _ = write!(&mut res, "{}", console::Emoji::new("📖", ""));
         }
 
         if let Some(title) = &self.title {
-            writeln!(f, " {title}\n",)?;
+            let _ = writeln!(&mut res, " {title}\n",);
         }
 
         if let Some(desc) = &self.description {
-            writeln!(f, " {desc}\n",)?;
+            let _ = writeln!(&mut res, " {desc}\n",);
         }
 
         if let Some(default) = &self.default {
-            writeln!(f, "{}  Default: {default}", console::Emoji::new("🛠️", ""),)?;
+            let _ = writeln!(
+                &mut res,
+                "{}  Default: {default}",
+                console::Emoji::new("🛠️", ""),
+            );
         }
 
         if let Some(example) = &self.example {
-            writeln!(
-                f,
+            let _ = writeln!(
+                &mut res,
                 "{} Example: export {}={example}",
                 console::Emoji::new("🧪", ""),
                 self.name,
-            )?;
+            );
         }
-        Ok(())
+
+        if let Some(valiator) = &self.validator {
+            if let Some(val_description) = valiator.description() {
+                let _ = writeln!(
+                    &mut res,
+                    "{} {}",
+                    console::Emoji::new("✅", ""),
+                    val_description,
+                );
+            }
+        }
+
+        res
     }
 }
 
@@ -45,7 +67,7 @@ fn doc_test() {
         .with_default(10)
         .with_example(15);
 
-    println!("{env_var}");
+    println!("{}", env_var.doc());
 
     println!("------");
     let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR")
@@ -53,12 +75,12 @@ fn doc_test() {
         .with_default(10)
         .with_example(15);
 
-    println!("{env_var}");
+    println!("{}", env_var.doc());
 
     println!("------");
     let env_var = EnvVarDef::<u8>::new("SOME_ENV_VAR")
         .with_default(10)
         .with_example(15);
 
-    println!("{env_var}");
+    println!("{}", env_var.doc());
 }

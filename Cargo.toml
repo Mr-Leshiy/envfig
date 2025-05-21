@@ -1,6 +1,10 @@
 [package]
 name = "envfig"
 version = "0.1.0"
+description = "A flexible and type-safe system for defining, documenting, and validating environment variables."
+repository = "https://github.com/Mr-Leshiy/envfig"
+readme = "README.md"
+license = "MIT"
 authors = [
     "Alex Pozhylenkov <leshiy12345678@gmail.com>"
 ]

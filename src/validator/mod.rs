@@ -22,6 +22,12 @@ pub trait Validator<T> {
         self,
         val: T,
     ) -> Result<T, Self::Err>;
+
+    /// A human description of the `Validatar` instance which would be included into the
+    /// `EnvVarDef::doc`
+    fn description(&self) -> Option<String> {
+        None
+    }
 }
 
 impl<T> Validator<T> for () {
