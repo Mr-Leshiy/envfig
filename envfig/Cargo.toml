@@ -1,0 +1,19 @@
+[package]
+name = "envfig"
+description = "A flexible and type-safe system for defining, documenting, and validating environment variables."
+version.workspace = true
+repository.workspace = true
+readme.workspace = true
+license.workspace = true
+authors.workspace = true
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+console = "0.15.11"
+thiserror = "2.0.12"
+
+[dev-dependencies]
+proptest = { version = "1.6.0", features = ["attr-macro"] }

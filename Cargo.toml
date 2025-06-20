@@ -1,7 +1,11 @@
-[package]
-name = "envfig"
+[workspace]
+resolver = "2"
+members = [
+    "envfig",
+]
+
+[workspace.package]
 version = "0.1.1"
-description = "A flexible and type-safe system for defining, documenting, and validating environment variables."
 repository = "https://github.com/Mr-Leshiy/envfig"
 readme = "README.md"
 license = "MIT"
@@ -10,7 +14,7 @@ authors = [
 ]
 edition = "2024"
 
-[lints.rust]
+[workspace.lints.rust]
 warnings = "deny"
 missing_docs = "deny"
 let_underscore_drop = "deny"
@@ -19,7 +23,7 @@ single_use_lifetimes = "deny"
 trivial_casts = "deny"
 trivial_numeric_casts = "deny"
 
-[lints.rustdoc]
+[workspace.lints.rustdoc]
 broken_intra_doc_links = "deny"
 invalid_codeblock_attributes = "deny"
 invalid_html_tags = "deny"
@@ -27,7 +31,7 @@ invalid_rust_codeblocks = "deny"
 bare_urls = "deny"
 unescaped_backticks = "deny"
 
-[lints.clippy]
+[workspace.lints.clippy]
 pedantic = { level = "deny", priority = -1 }
 unwrap_used = "deny"
 expect_used = "deny"
@@ -46,10 +50,3 @@ unchecked_duration_subtraction = "deny"
 unreachable = "deny"
 missing_docs_in_private_items = "allow"
 arithmetic_side_effects = "deny"
-
-[dependencies]
-console = "0.15.11"
-thiserror = "2.0.12"
-
-[dev-dependencies]
-proptest = { version = "1.6.0", features = ["attr-macro"] }
