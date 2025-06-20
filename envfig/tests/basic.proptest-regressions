@@ -1,0 +1,11 @@
+# Seeds for failure cases proptest has generated in the past. It is
+# automatically read and these particular cases re-run before any
+# novel cases are generated.
+#
+# It is recommended to check this file in to source control so that
+# everyone who runs the test benefits from these saved cases.
+cc 9c31f207ad0dd555b2e2dd33d8a9df8753baf6f741a56095f41fd774a904d078 # shrinks to LoadWithValidatorTestArgs = LoadWithValidatorTestArgs { field0: 113, field1: 255 }
+cc be96223e9c30581ce50780672ae2012143774bf2b23d344f9f6601843edda9df # shrinks to LoadTestArgs = LoadTestArgs { field0: 82 }
+cc 4c938406c19c15f6bf4c3432f32da06427475052289b5b6792627c8bc5a54fa2 # shrinks to LoadWithDefaultTestArgs = LoadWithDefaultTestArgs { field0: 102, field1: 117 }
+cc 78e14c619402b948512c8e8b4ae4669ef2aa4751e48ff2b12d03764a94d4161d # shrinks to LoadOptionWithValidatorTestArgs = LoadOptionWithValidatorTestArgs { field0: 212, field1: None }
+cc 34037df8758f7043f224c213876876259863e77e334f504d14e3f02ca523d7ba # shrinks to LoadOptionTestArgs = LoadOptionTestArgs { field0: 15 }
