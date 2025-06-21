@@ -5,7 +5,7 @@ mod error;
 use error::{Error, Result};
 use proc_macro2::TokenStream;
 use quote::quote;
-use syn::{Data, DataStruct, DeriveInput, Fields, Ident, Visibility, parse_macro_input};
+use syn::{Data, DataStruct, DeriveInput, Ident, Visibility, parse_macro_input};
 
 /// TODO
 #[proc_macro_derive(EnvVarDef, attributes(envardef))]
@@ -26,16 +26,22 @@ fn process_struct(
     ident: &Ident,
     data_struct: &DataStruct,
 ) -> Result<TokenStream> {
-    let Fields::Named(_fields) = &data_struct.fields else {
-        Err(Error::Other(
-            "It must be a named struct, unit or tuple structs are not allowed".to_string(),
-        ))?
-    };
-
+    let mut fields_load_init = Vec::new();
+    for field in data_struct.fields.iter() {
+        let field_ident = field.ident.as_ref().ok_or(Error::Other( "It must be a named struct, unit or tuple structs are not allowed".to_string()))?;
+        let field_type = &field.ty;
+        let env_var_name = quote! { &stringify!(#field_ident).to_uppercase() };
+        
+        fields_load_init.push(quote! {
+            #field_ident: envfig::EnvVarDef::<#field_type>::new( #env_var_name ).load()?,
+        });
+    }
     Ok(quote! {
             impl #ident {
-                #visibility fn load() -> envfig::Result<()> {
-                    Ok(())
+                #visibility fn load() -> envfig::Result<Self> {
+                    Ok(Self {
+                        #(#fields_load_init)*
+                    })
                 }
             }
     })
