@@ -17,12 +17,10 @@ pub struct SatMinMaxValidator<T> {
 impl<T> Validator<T> for SatMinMaxValidator<T>
 where T: PartialOrd
 {
-    type Err = ();
-
     fn validate(
         self,
         val: T,
-    ) -> Result<T, Self::Err> {
+    ) -> anyhow::Result<T> {
         match self.min {
             Some(min) if val < min => return Ok(min),
             _ => {},

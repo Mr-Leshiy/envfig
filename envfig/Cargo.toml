@@ -12,8 +12,10 @@ edition.workspace = true
 workspace = true
 
 [dependencies]
+envfig-derive = { path = "./../envfig-derive" }
+
 console = "0.15.11"
-thiserror = "2.0.12"
+anyhow = "1.0.98"
 
 [dev-dependencies]
 proptest = { version = "1.6.0", features = ["attr-macro"] }

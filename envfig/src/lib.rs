@@ -5,6 +5,8 @@ pub mod validator;
 
 use std::{env, fmt::Debug, str::FromStr};
 
+pub use anyhow::Result;
+pub use envfig_derive::*;
 use validator::Validator;
 
 /// Represents the definition of an environment variable, including its name,
@@ -133,28 +135,10 @@ impl<T, V> EnvVarDef<T, V> {
     }
 }
 
-/// Errors which could occure during the `EnvVarDef::load` method
-#[derive(thiserror::Error, Clone, Debug, PartialEq, Eq)]
-pub enum LoadError<ParseErrorT: Debug, ValidationErrorT> {
-    /// The environment variable could not be loaded due to it not being set
-    /// or not being valid Unicode.
-    #[error("Cannot load Env Var {0}, either not set or not valid unicode encoded. error: {1:?}")]
-    CannotLoad(String, env::VarError),
-
-    /// The environment variable was set but could not be parsed into the expected type.
-    #[error("Cannot parse Env Var {0} value {1}, err: {2:?}")]
-    CannotParse(String, String, ParseErrorT),
-
-    /// The environment variable value did not pass validation.
-    #[error(transparent)]
-    ValidationError(#[from] ValidationErrorT),
-}
-
-impl<T: FromStr, V, ParseErrorT, ValidationErrorT> EnvVarDef<T, V>
+impl<T: FromStr, V> EnvVarDef<T, V>
 where
-    T: FromStr<Err = ParseErrorT>,
-    V: Validator<T, Err = ValidationErrorT>,
-    ParseErrorT: Debug,
+    T: FromStr<Err: std::error::Error>,
+    V: Validator<T>,
 {
     /// Tries to loads environment variable.
     ///
@@ -164,12 +148,12 @@ where
     /// - `LoadError::CannotParse` (if `default` is set, returns `default` value instead
     ///   of this error).
     /// - `LoadError::ValidationError`.
-    pub fn load(self) -> Result<T, LoadError<ParseErrorT, ValidationErrorT>> {
-        env::var(&self.name)
-            .map_err(|e| LoadError::CannotLoad(self.name.clone(), e))
+    pub fn load(self) -> anyhow::Result<T> {
+        Ok(env::var(&self.name)
+            .map_err(|e| anyhow::anyhow!("Cannot load Env Var {0}, either not set or not valid unicode encoded. error: {1}", self.name, e))
             .and_then(|v| {
                 v.parse()
-                    .map_err(|e| LoadError::CannotParse(self.name, v, e))
+                    .map_err(|e| anyhow::anyhow!("Cannot parse Env Var {0} value {1}, err: {2}", self.name, v, e))
             })
             .map_or_else(|e| self.default.ok_or(e), Ok)
             .and_then(|v| {
@@ -178,15 +162,14 @@ where
                 } else {
                     Ok(v)
                 }
-            })
+            })?)
     }
 }
 
-impl<T: FromStr, V, ParseErrorT, ValidationErrorT> EnvVarDef<T, V>
+impl<T: FromStr, V> EnvVarDef<T, V>
 where
-    T: FromStr<Err = ParseErrorT>,
-    V: Validator<Option<T>, Err = ValidationErrorT>,
-    ParseErrorT: Debug,
+    T: FromStr,
+    V: Validator<Option<T>>,
 {
     /// Tries to loads environment variable that is optional.
     /// Does not fails on `LoadError::CannotLoad` and `LoadError::CannotParse`,
@@ -194,7 +177,7 @@ where
     ///
     /// # Errors
     /// - `LoadError::ValidationError`.
-    pub fn load_option(self) -> Result<Option<T>, LoadError<ParseErrorT, ValidationErrorT>> {
+    pub fn load_option(self) -> anyhow::Result<Option<T>> {
         let val = env::var(&self.name).ok().and_then(|v| v.parse::<T>().ok());
         if let Some(validator) = self.validator {
             Ok(validator.validate(val)?)

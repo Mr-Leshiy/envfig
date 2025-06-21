@@ -2,7 +2,7 @@
 
 use std::fmt::Debug;
 
-use envfig::{EnvVarDef, LoadError, validator::Validator};
+use envfig::{EnvVarDef, validator::Validator};
 
 #[proptest::property_test]
 fn load_test(env_var_value: u8) {
@@ -16,18 +16,12 @@ fn load_test(env_var_value: u8) {
     unsafe {
         std::env::remove_var(env_var_name);
     }
-    assert!(matches!(
-        env_var.clone().load(),
-        Err(LoadError::CannotLoad(_, _))
-    ));
+    assert!(env_var.clone().load().is_err(),);
 
     unsafe {
         std::env::set_var(env_var_name, "not a u8 type");
     }
-    assert!(matches!(
-        env_var.clone().load(),
-        Err(LoadError::CannotParse(_, _, _))
-    ));
+    assert!(env_var.clone().load().is_err(),);
 }
 
 #[proptest::property_test]
@@ -60,14 +54,12 @@ struct TestValidator<T> {
     output: Result<T, ()>,
 }
 impl<T: PartialEq + Debug> Validator<T> for TestValidator<T> {
-    type Err = ();
-
     fn validate(
         self,
         val: T,
-    ) -> Result<T, Self::Err> {
+    ) -> anyhow::Result<T> {
         assert_eq!(val, self.input);
-        self.output
+        self.output.map_err(|()| anyhow::anyhow!("Some error"))
     }
 }
 
